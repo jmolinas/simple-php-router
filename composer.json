@@ -1,0 +1,21 @@
+{
+    "name": "jmolinas/simple-router",
+    "description": "Simple PHP MicroFramework",
+    "authors": [
+        {
+            "name": "Joseph Molinas",
+            "email": "joseph_molinas@msn.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jmolinas/simple-php-router.git"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "JMolinas\\SimpleRouter\\": "src"
+        }
+    }
+}
