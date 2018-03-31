@@ -13,7 +13,6 @@ class Router
     public function __construct(HttpInterface $http)
     {
         $this->http = $http;
-        $this->view = $view;
     }
 
     private function parameters($function, $arguments)
@@ -21,7 +20,7 @@ class Router
         $values = [];
         $reflector = new \ReflectionFunction($function);
         $parameters = $reflector->getParameters();
-        foreach ($parameters as $key => $parameter) {
+        foreach ($parameters as $parameter) {
             $name = $parameter->getName();
             $isArgumentGiven = array_key_exists($name, $arguments);
 
@@ -71,15 +70,13 @@ class Router
                 }
 
                 foreach ($callback as $value) {
-                    $values = $this->params($value, $arguments);
+                    $values = $this->parameters($value, $arguments);
                     $function = call_user_func_array($value, $values);
 
                     if ($function === false) {
                         break;
                     }
                 }
-
-                $this->message()->clear();
                 return true;
             }
         }

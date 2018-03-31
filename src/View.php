@@ -34,7 +34,7 @@ class View
         return ob_get_clean();
     }
 
-    public function render($template, $data = array())
+    public function render($template, array $data = [])
     {
         echo $this->display($template, $data);
     }
