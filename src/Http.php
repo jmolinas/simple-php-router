@@ -8,35 +8,24 @@ class Http implements HttpInterface
 
     protected $url;
 
-    public function __construct()
+    public function __construct(array $server)
     {
-        $this->request = $_SERVER;
-        if (!empty($_SERVER['REQUEST_URL'])) {
-            $url = $_SERVER['REQUEST_URL'];
-        } else {
-            $url = $_SERVER['REQUEST_URI'];
-        }
-        // Store the dirty version of the URL
-        $this->url = $url;
+        $this->request = $server;
+        $this->url = !empty($server['REQUEST_URL']) ? $server['REQUEST_URL'] : $server['REQUEST_URI'];
     }
 
     public function getUrl()
     {
-        return $this->getCleanUrl($this->url);
-    }
-
-    protected function getCleanUrl($url)
-    {
         // The request url might be /project/index.php, this will remove the /project part
-        $url = str_replace(dirname($_SERVER['SCRIPT_NAME']), '', $url);
+        $url = str_replace(dirname($this->request['SCRIPT_NAME']), '', $this->url);
         // Remove the query string if there is one
         $queryString = strpos($url, '?');
-        if ($query_string !== false) {
+        if ($queryString !== false) {
             $url = substr($url, 0, $queryString);
         }
         // If the URL looks like http://localhost/index.php/path/to/folder remove /index.php
-        if (substr($url, 1, strlen(basename($_SERVER['SCRIPT_NAME']))) == basename($_SERVER['SCRIPT_NAME'])) {
-            $url = substr($url, strlen(basename($_SERVER['SCRIPT_NAME'])) + 1);
+        if (substr($url, 1, strlen(basename($this->request['SCRIPT_NAME']))) == basename($this->request['SCRIPT_NAME'])) {
+            $url = substr($url, strlen(basename($this->request['SCRIPT_NAME'])) + 1);
         }
         // Make sure the URI ends in a /
         $url = rtrim($url, '/') . '/';
@@ -48,6 +37,5 @@ class Http implements HttpInterface
     public function redirect($uri)
     {
         header("Location: {$uri}"); /* Redirect browser */
-        exit();
     }
 }

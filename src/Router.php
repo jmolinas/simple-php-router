@@ -13,7 +13,6 @@ class Router
     public function __construct(HttpInterface $http)
     {
         $this->http = $http;
-        $this->view = $view;
     }
 
     private function parameters($function, $arguments)
@@ -21,12 +20,12 @@ class Router
         $values = [];
         $reflector = new \ReflectionFunction($function);
         $parameters = $reflector->getParameters();
-        foreach ($parameters as $key => $parameter) {
+        foreach ($parameters as $parameter) {
             $name = $parameter->getName();
             $isArgumentGiven = array_key_exists($name, $arguments);
 
             if (!$isArgumentGiven && !$param->isDefaultValueAvailable()) {
-                throw new \Exception('Parameter $name is mandatory but was not provided');
+                throw new \Exception("Parameter {$name} is mandatory but was not provided");
             }
 
             $values[$param->getPosition()] = $isArgumentGiven ? $arguments[$name] : $param->getDefaultValue();
@@ -35,23 +34,25 @@ class Router
         return $values;
     }
 
-    public function route()
+    private function setArguments($url)
     {
-        $numargs = func_num_args();
-        $route = rtrim(func_get_arg(0), '/') . '/';
-        preg_match_all('#:([\w]+)\+?#', $route, $match);
+        preg_match_all('#:([\w]+)\+?#', $url, $match);
         $this->arguments = array_values($match[1]);
+    }
+
+    private function pattern($url)
+    {
+        $route = rtrim($url, '/') . '/';
+        $this->setArguments($route);
         $route = preg_replace('#:([\w]+)\+?#', '([a-zA-Z0-9_-]+)', $route);
         $route = str_replace('/', '\/', $route);
-        $route = '/^' . $route . '?$/';
-        $argumentList = func_get_args();
-        $this->routes[$route] = array();
+        return '/^' . $route . '?$/';
+    }
 
-        if ($numargs >= 2) {
-            for ($i = 1; $i < $numargs; $i++) {
-                $this->routes[$route][] = $argumentList[$i];
-            }
-        }
+    public function route($url, $callback)
+    {
+        $pattern = $this->pattern($url);
+        $this->routes[$pattern] = $callback;
         return $this;
     }
 
@@ -70,16 +71,12 @@ class Router
                     $arguments[$value] = $args[$key];
                 }
 
-                foreach ($callback as $value) {
-                    $values = $this->params($value, $arguments);
-                    $function = call_user_func_array($value, $values);
+                $values = $this->parameters($callback, $arguments);
+                $function = call_user_func_array($callback, $values);
 
-                    if ($function === false) {
-                        break;
-                    }
+                if ($function === false) {
+                    break;
                 }
-
-                $this->message()->clear();
                 return true;
             }
         }
