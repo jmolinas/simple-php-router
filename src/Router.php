@@ -71,8 +71,9 @@ class Router
                     $arguments[$value] = $args[$key];
                 }
 
-                $values = $this->parameters($callback, $arguments);
-                $function = call_user_func_array($callback, $values);
+                foreach ($callback as $value) {
+                    $values = $this->parameters($value, $arguments);
+                    $function = call_user_func_array($value, $values);
 
                 if ($function === false) {
                     break;
