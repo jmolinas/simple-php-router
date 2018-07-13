@@ -58,7 +58,7 @@ class Router
 
     public function execute()
     {
-        $uri = $this->http->getUrl;
+        $uri = $this->http->getUrl();
         $match = false;
 
         foreach ($this->routes as $pattern => $callback) {
@@ -75,16 +75,17 @@ class Router
                     $values = $this->parameters($value, $arguments);
                     $function = call_user_func_array($value, $values);
 
-                if ($function === false) {
-                    break;
+                    if ($function === false) {
+                        break;
+                    }
+                    return true;
                 }
-                return true;
             }
-        }
 
-        if (!$match) {
-            header('HTTP/1.0 404 Not Found');
-            echo 'Page Not Found';
+            if (!$match) {
+                header('HTTP/1.0 404 Not Found');
+                echo 'Page Not Found';
+            }
         }
     }
 }
